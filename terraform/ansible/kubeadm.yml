@@ -1,0 +1,25 @@
+---
+- hosts: all
+  tasks:
+  - name: yum upgrade all
+    yum:
+      name: "*"
+      state: latest
+
+- hosts: k8s[0]
+  pre_tasks:
+  - name: set cluster_domain fact
+    set_fact:
+      cluster_domain: "{{ (ansible_extra_vars | from_json).cluster_domain | default(ansible_fqdn) }}"
+    when: ansible_extra_vars is defined
+  roles:
+  - kubeadm
+  - flannel
+  - localstorage
+  - helm
+  - flux
+  - nginx_ingress
+  - cert_manager
+  - root_ca
+  - gitlab
+  - gitlab_runner

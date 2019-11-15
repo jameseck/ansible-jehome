@@ -1,0 +1,93 @@
+---
+- name: Install fluxctl
+  get_url:
+    url: "https://github.com/fluxcd/flux/releases/download/{{ flux_version }}/fluxctl_linux_amd64"
+    dest: /usr/local/bin/fluxctl
+    mode: 0755
+
+- name: Check if Flux Helm CRD is installed
+  command: kubectl get crd helmreleases.flux.weave.works
+  changed_when: False
+  failed_when: False
+  register: flux_helm_crd
+
+- name: Install Flux Helm CRD
+  command: kubectl apply -f https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml
+  when: flux_helm_crd.rc != 0
+
+- name: Create Flux namespace
+  k8s:
+    name: flux
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Create Flux private ssh key secret
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: flux-git-auth
+        namespace: flux
+      data:
+        identity: "{{ (lookup('file', '{{ role_path }}/files/flux_ssh_key') + '\n') | b64encode }}"
+      type: Opaque
+    validate:
+      fail_on_error: yes
+      strict: yes
+
+- name: Check Helm Flux repo
+  shell: helm repo list | grep fluxcd | awk '{print $1" "$2}'
+  changed_when: False
+  register: helm_repo_list
+
+- name: Add Helm Flux repo
+  command: helm repo add fluxcd https://charts.fluxcd.io
+  when: '"fluxcd https://charts.fluxcd.io" not in helm_repo_list.stdout_lines'
+  notify: helm_repo_update
+
+- meta: flush_handlers
+
+- name: Check Helm releases
+  command: helm list -q
+  changed_when: False
+  register: helm_list_results
+
+- name: Install Flux via Helm
+  shell: >
+    helm upgrade -i flux \
+      --set helmOperator.create=true \
+      --set helmOperator.createCRD=false \
+      --set git.user={{ flux_git_user }} \
+      --set git.email={{ flux_git_email }} \
+      --set git.url={{ flux_git_url }} \
+      --set git.secretName=flux-git-auth \
+      --set git.pollInterval={{ flux_git_poll_interval }} \
+      --set git.branch={{ flux_git_branch }} \
+      --namespace flux \
+      --wait \
+      fluxcd/flux
+  when: "'flux' not in helm_list_results.stdout_lines"
+
+# consider adding export FLUX_FORWARD_NAMESPACE=flux to /root/.bashrc
+
+# fluxctl list-workloads -a
+# fluxctl sync
+
+- name: Wait for Flux rollout
+  command: kubectl -n flux rollout status deployment/flux
+  changed_when: False
+
+- name: Flux sync
+  command: fluxctl --k8s-fwd-ns flux sync
+  changed_when: False
+  failed_when: False
+  register: flux_sync
+
+- name: Flux sync output
+  debug:
+    var: flux_sync
+  when: flux_sync.rc != 0
+

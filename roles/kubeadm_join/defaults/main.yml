@@ -1,0 +1,8 @@
+---
+k8s_package_version: 1.15.4
+k8s_cluster_version: stable-1.15
+
+base_cluster_domain: "{{ ansible_fqdn }}"
+api_cluster_domain: "{{ base_cluster_domain }}"
+cluster_domain: "apps.{{ base_cluster_domain }}"
+cluster_dashes: "{{ cluster_domain | replace('.', '-') }}"

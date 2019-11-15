@@ -1,0 +1,10 @@
+---
+- name: reload_haproxy
+  service:
+    name: rh-haproxy18-haproxy
+    state: reloaded
+
+- name: restart_rsyslog
+  service:
+    name: rsyslog
+    state: restarted

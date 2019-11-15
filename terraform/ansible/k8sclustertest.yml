@@ -1,0 +1,49 @@
+---
+- hosts: k8s[0]
+  tasks:
+  - name: Create bootstrap token
+    command: kubeadm token create
+    register: k8s_join_token
+  - name: Create bootstrap certificate key
+    shell: kubeadm init phase upload-certs --upload-certs  | grep "Using certificate key:" -A1 | tail -n 1
+    register: k8s_join_certificate_key
+  - name: Retrieve certificate hash
+    shell: openssl x509 -in /etc/kubernetes/pki/ca.crt -pubkey -noout | openssl pkey -pubin -outform DER | openssl dgst -sha256  | sed -e 's/^(stdin)= //'
+    register: k8s_join_certificate_hash
+
+# join the other nodes to the cluster
+- hosts: k8s[1:]
+  pre_tasks:
+  - name: set cluster_domain fact
+    set_fact:
+      cluster_domain: "{{ (ansible_extra_vars | from_json).cluster_domain | default(ansible_fqdn) }}"
+    when: ansible_extra_vars is defined
+  - name: groups
+    debug:
+      var: groups["k8s"][0]
+  - name: debugging hostvars
+    debug:
+      var: "{{ hostvars[groups['k8s'][0]]['k8s_join_token'] }}"
+  roles:
+  - role: kubeadm_join
+    token: "{{ hostvars[groups['k8s'][0]].k8s_join_token.stdout }}"
+    cert_key: "{{ hostvars[groups['k8s'][0]].k8s_join_certificate_key.stdout }}"
+    cert_hash: "{{ hostvars[groups['k8s'][0]].k8s_join_certificate_hash.stdout }}"
+
+# install services onto the cluster
+#- hosts: k8s[0]
+#  pre_tasks:
+#  - name: set cluster_domain fact
+#    set_fact:
+#      cluster_domain: "{{ (ansible_extra_vars | from_json).cluster_domain | default(ansible_fqdn) }}"
+#    when: ansible_extra_vars is defined
+#  roles:
+#  - flannel
+#  - localstorage
+#  - helm
+#  - flux
+#  - nginx_ingress
+#  - cert_manager
+#  - root_ca
+#  - gitlab
+#  - gitlab_runner

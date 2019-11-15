@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  tasks:
+  - name: add kvm hosts to inventory
+    add_host:
+      name: "{{ item.key }}"
+      groups: kvm
+      config_dict: "{{ item.value }}"
+    with_dict: "{{ kvm_hosts_map }}"
+  - debug:
+      var: hostvars['k8scluster1.je.home']
+
+- hosts: kvm
+  tasks:
+  - name: ping
+    ping:

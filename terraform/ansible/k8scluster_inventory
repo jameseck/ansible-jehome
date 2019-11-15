@@ -1,0 +1,7 @@
+[k8s]
+k8scluster1.je.home
+k8scluster2.je.home
+k8scluster3.je.home
+
+[all:vars]
+cluster_domain=k8scluster.je.home

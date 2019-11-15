@@ -1,0 +1,34 @@
+---
+- name: Create nginx-ingress namespace
+  k8s:
+    name: nginx-ingress
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Check Helm releases
+  command: helm list -q
+  changed_when: False
+  register: helm_list_results
+
+- name: Install nginx-ingress via Helm
+  shell: >
+    helm upgrade \
+      --install \
+      nginx-ingress \
+      stable/nginx-ingress \
+      --namespace nginx-ingress \
+      --set controller.hostNetwork=true \
+      --set controller.kind=DaemonSet \
+      --set controller.daemonset.useHostPort=true \
+      --set controller.daemonset.hostPorts.http=80 \
+      --set controller.daemonset.hostPorts.https=443 \
+      --set controller.service.type="NodePort" \
+      --set controller.service.nodePorts.http=30080 \
+      --set controller.service.nodePorts.https=30081 \
+      --set controller.service.nodePorts.tcp.2222=30222 \
+      --set tcp.2222="gitlab/gitlab-gitlab-shell:22" \
+      --set-string controller.nodeSelector."node-role\.kubernetes\.io/master"="" \
+      --wait
+  when: "'nginx-ingress' not in helm_list_results.stdout_lines"
+# The controller.service.nodePorts.{http|https|} don't matter since the daemonset is running with hostNetwork, so controller.daemonset.hostPorts.{http|https} are valid

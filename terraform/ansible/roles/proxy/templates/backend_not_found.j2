@@ -1,0 +1,7 @@
+backend not_found_http
+  mode http
+  errorfile 403 /opt/rh/rh-haproxy18/root/usr/share/haproxy/403.http
+
+backend not_found_tcp
+  mode tcp
+  errorfile 403 /opt/rh/rh-haproxy18/root/usr/share/haproxy/403.http

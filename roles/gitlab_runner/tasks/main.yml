@@ -1,0 +1,41 @@
+---
+- name: Transform gitlab certificate secret for gitlab-runner
+  shell: |
+    GITLAB_CERT=$(kubectl -n gitlab get secret gitlab-{{ cluster_dashes }} -o=jsonpath='{.data.tls\.crt}' | base64 -d)
+    CA_CERT=$(kubectl -n gitlab get secret gitlab-{{ cluster_dashes }} -o=jsonpath='{.data.ca\.crt}' | base64 -d)
+    CERT_CHAIN="${GITLAB_CERT}
+    ${CA_CERT}"
+    kubectl -n gitlab delete secret gitlab-{{ cluster_dashes }}-runner
+    kubectl -n gitlab create secret generic gitlab-{{ cluster_dashes }}-runner --from-literal=gitlab.{{ cluster_domain }}.crt="${CERT_CHAIN}"
+
+- name: Get Gitlab Runner token from Gitlab
+  k8s_facts:
+    api_version: v1
+    kind: Secret
+    name: gitlab-gitlab-runner-secret
+    namespace: gitlab
+  register: gitlab_runner_registration_token
+
+- name: debug
+  debug:
+    var: gitlab_runner_registration_token
+
+- name: Check Helm releases
+  command: helm list -q
+  changed_when: False
+  register: helm_list_results
+
+- name: Install Gitlab Runner via Helm
+  shell: >
+    helm upgrade -i gitlab-runner \
+      --set gitlabUrl="https://gitlab.{{ cluster_domain }}/" \
+      --set runnerRegistrationToken="{{ gitlab_runner_registration_token.resources[0].data['runner-registration-token'] | b64decode }}" \
+      --set certsSecretName="gitlab-{{ cluster_dashes }}-runner" \
+      --set rbac.create=true \
+      --set runners.image="docker:18" \
+      --set runners.privileged=true \
+      --namespace gitlab \
+      --timeout 1800 \
+      --wait \
+      gitlab/gitlab-runner
+  when: "'gitlab-runner' not in helm_list_results.stdout_lines"

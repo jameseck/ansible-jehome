@@ -1,0 +1,31 @@
+---
+- name: Check local-path storageclass
+  k8s_facts:
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+    name: local-path
+  register: local_path_storageclass
+
+- name: debug storageclass
+  debug:
+    var: local_path_storageclass
+
+- name: Create local-path-provisioner
+  command: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml --wait
+  when: local_path_storageclass.resources is not defined or (local_path_storageclass.resources | length == 0)
+
+- name: Check local-path storageclass
+  k8s_facts:
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+    name: local-path
+  register: local_path_storageclass
+
+- name: Patch storageclass default
+  command: >
+    kubectl patch storageclass local-path -p '{ "metadata": { "annotations": { "storageclass.kubernetes.io/is-default-class":"true" } } }'
+  when: >
+    ('storageclass.kubernetes.io/is-default-class' not in local_path_storageclass.resources[0].metadata.annotations) or
+    (local_path_storageclass.resources[0].metadata.annotations['storageclass.kubernetes.io/is-default-class'] != 'true')
+# https://github.com/rancher/local-path-provisioner
+# kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml

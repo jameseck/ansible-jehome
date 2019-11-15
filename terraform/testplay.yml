@@ -1,0 +1,12 @@
+- hosts: all
+  tasks:
+  - name: Ensure rsyslog has imudp module loaded
+    lineinfile:
+      path: /tmp/rsyslog.conf
+      state: present
+      line: '$ModLoad imudp'
+  - name: Ensure rsyslog is listening on 514/udp
+    lineinfile:
+      path: /tmp/rsyslog.conf
+      state: present
+      line: '$UDPServerRun 514'

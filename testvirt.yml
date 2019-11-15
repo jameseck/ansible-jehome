@@ -1,0 +1,32 @@
+---
+- hosts: localhost
+  tasks:
+  - add_host:
+      name: 192.168.0.35
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: list all vms
+    virt:
+      command: list_vms
+    register: virt_list_all
+  - name: list all running vms
+    virt:
+      command: list_vms
+      state: running
+    register: virt_list_running
+  - name: set fact for all vms that are NOT running
+    set_fact:
+      not_running_vms: "{{ virt_list_all.list_vms | difference(virt_list_running.list_vms) }}"
+  - name: debug
+    debug:
+      var: not_running_vms
+  - name: vm info # This gets info for ALL vms unless name is provided
+    virt:
+      command: info
+    register: vminfo
+  - name: debug
+    debug:
+      var: vminfo
+
+# We can use the vm info command to get all vm's and check autostart - if autostart=true and vm not running then start it

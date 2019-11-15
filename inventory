@@ -1,0 +1,6 @@
+[edgerouter]
+er.jehome.co.uk ansible_host=192.168.0.209 ansible_user=ubnt
+
+[edgerouter:vars]
+ansible_connection=network_cli
+ansible_network_os=edgeos

@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  tasks:
+  - name: terraform init
+    command: terraform init
+    args:
+      chdir: ./terraform
+  - name: terraform run
+    terraform:
+      force_init: yes
+      project_path: ./terraform
+      state: present
+      workspace: jehome
+    register: terraform_dump
+
+  - name: debugging
+    debug:
+      var: terraform_dump

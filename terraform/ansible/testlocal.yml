@@ -1,0 +1,8 @@
+- hosts: localhost
+  tasks:
+  - name: testing
+    debug:
+      msg: "{{ (lookup('file', 'roles/kubeadm/files/flux_ssh_key') + '\n') | b64encode }}"
+
+
+#          identity: "{{ lookup('file', 'roles/kubeadm/files/flux_ssh_key') + '\n' | b64encode }}"

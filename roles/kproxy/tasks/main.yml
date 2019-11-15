@@ -1,0 +1,44 @@
+---
+- name: Install haproxy repo
+  yum:
+    name: centos-release-scl
+    state: installed
+
+- name: Install haproxy
+  yum:
+    name: rh-haproxy18
+    state: installed
+
+- name: Template haproxy.cfg
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg
+    mode: 0644
+    validate: /opt/rh/rh-haproxy18/root/usr/sbin/haproxy  -f %s -c -q
+  notify: reload_haproxy
+
+- name: Set sebool for haproxy connect
+  seboolean:
+    name: haproxy_connect_any
+    state: yes
+    persistent: yes
+
+- name: Ensure rsyslog has imudp module loaded
+  lineinfile:
+    path: /etc/rsyslog.conf
+    state: present
+    line: '$ModLoad imudp'
+  notify: restart_rsyslog
+
+- name: Ensure rsyslog is listening on 514/udp
+  lineinfile:
+    path: /etc/rsyslog.conf
+    state: present
+    line: '$UDPServerRun 514'
+  notify: restart_rsyslog
+
+- name: Manage haproxy service
+  service:
+    name: rh-haproxy18-haproxy
+    state: started
+    enabled: yes

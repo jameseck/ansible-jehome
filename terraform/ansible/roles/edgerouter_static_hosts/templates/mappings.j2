@@ -1,0 +1,7 @@
+{% for fqdn,value in hosts_dict.items() %}
+delete service dhcp-server shared-network-name {{ value.network_name }} subnet {{ value.subnet }} static-mapping {{ fqdn }}
+delete system static-host-mapping host-name {{ fqdn }}
+set service dhcp-server shared-network-name {{ value.network_name }} subnet {{ value.subnet }} static-mapping {{ fqdn }} ip-address {{ value.ip }}
+set service dhcp-server shared-network-name {{ value.network_name }} subnet {{ value.subnet }} static-mapping {{ fqdn }} mac-address {{ value.mac | lower }}
+set system static-host-mapping host-name {{ fqdn }} inet {{ value.ip }}
+{% endfor %}

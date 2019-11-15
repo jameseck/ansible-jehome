@@ -1,0 +1,81 @@
+---
+# This file describes the tasks required to:
+# - create a self signed Issuer to generate a root CA certificate
+# - create the root CA certificate
+# - create a ClusterIssuer that uses the generated root CA certificate to issue certificates for various apps/services
+
+- name: Create selfsigning Issuer for the root CA
+  k8s:
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1alpha2
+      kind: Issuer
+      metadata:
+        name: "{{ root_ca_issuer_name }}"
+        namespace: cert-manager
+      type: Opaque
+      spec:
+        selfSigned: {}
+    wait: true
+    wait_condition:
+      reason: IsReady
+      type: Ready
+      status: "True"
+    wait_timeout: 30
+
+- name: Create root CA
+  k8s:
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1alpha2
+      kind: Certificate
+      metadata:
+        name: "{{ root_ca_certificate_name }}"
+        namespace: cert-manager
+      spec:
+        commonName: "{{ root_ca_certificate_name }}"
+        secretName: "{{ root_ca_certificate_name }}"
+        isCA: true
+        issuerRef:
+          kind: Issuer
+          name: "{{ root_ca_issuer_name }}"
+    wait: true
+    wait_condition:
+      reason: Ready
+      type: Ready
+      status: "True"
+    wait_timeout: 30
+
+- name: Create ClusterIssuer for root CA
+  k8s:
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1alpha2
+      kind: ClusterIssuer
+      metadata:
+        name: "{{ root_ca_clusterissuer_name }}"
+      spec:
+        ca:
+          secretName: "{{ root_ca_certificate_name }}"
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+    wait_timeout: 30
+
+# NOTE: We don't need these as the k8s resource wait_condition seems to work just fine
+#- name: Check root ca statuses
+#  shell: >
+#    kubectl -n cert-manager get {{ item }} -o json | jq -r '.status.conditions[0] | "\(.type)=\(.status)"'
+#  register: cert_status
+#  with_items:
+#  - "issuer {{ root_ca_issuer_name }}"
+#  - "certificate {{ root_ca_certificate_name }}"
+#  - "clusterissuer {{ root_ca_clusterissuer_name }}"
+
+# NOTE: We don't need these as the k8s resource wait_condition seems to work just fine
+#- name: Fail if root ca statuses are not Ready
+#  fail:
+#    msg: "The resource {{ item.item }} does not have a Ready status"
+#  when: item.stdout != "Ready=True"
+#  with_items: "{{ cert_status.results }}"

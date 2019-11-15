@@ -1,0 +1,64 @@
+
+
+
+frontend ft_vip_http
+  bind :80
+  mode http
+  log global
+  option httplog
+  capture request header Host len 60
+  log-format "vip %[capture.req.hdr(0)] %ci:%cp\ [%tr]\ %ft\ %b/%s\ %TR/%Tw/%Tc/%Tr/%Ta\ %ST\ %B\ %CC\ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %hr\ %hs\ %{+Q}r"
+  tcp-request inspect-delay 5s
+
+  acl k8sjehome       hdr(host) -m end -i .k8s.letitbleed.org
+  acl osjehome        hdr(host) -m end -i .osapps.letitbleed.org
+  acl openshiftjehome hdr(host) -m end -i .apps.letitbleed.org
+
+  use_backend bk_http_k8s if k8sjehome
+  use_backend bk_http_openshift if openshiftjehome
+  use_backend bk_http_os if osjehome
+  default_backend not_found_http
+
+frontend ft_vip_https
+  bind :443
+  mode tcp
+  log global
+  option tcplog
+  tcp-request inspect-delay 5s
+  tcp-request content capture req.ssl_sni len 30
+  log-format 'ssl_vip: %[capture.req.hdr(0)] %ci:%cp [%t] %ft %b/%s %Tw/%Tc/%Tt %B %ts %ac/%fc/%bc/%sc/%rc %sq/%bq'
+  tcp-request content accept if { req_ssl_hello_type 1 }
+
+  acl k8sjehome       req.ssl_sni -m end .k8s.letitbleed.org
+  acl osjehome        req.ssl_sni -m end .osapps.letitbleed.org
+  acl openshiftjehome req.ssl_sni -m end .apps.letitbleed.org
+
+  use_backend bk_https_k8s if k8sjehome
+  use_backend bk_https_openshift if openshiftjehome
+  use_backend bk_https_os if osjehome
+  default_backend not_found_tcp
+
+frontend ft_ssl_vip_api
+  bind :8443
+  mode tcp
+  log global
+  option tcplog
+  log-format "vip_api: %[capture.req.hdr(0)] %ci:%cp [%t] %ft %b/%s %Tw/%Tc/%Tt %B %ts %ac/%fc/%bc/%sc/%rc %sq/%bq"
+  tcp-request inspect-delay 5s
+  tcp-request content capture req.ssl_sni len 30
+  tcp-request content accept if { req_ssl_hello_type 1 }
+
+  acl osjehome        req.ssl_sni -m end os.letitbleed.org
+  acl openshiftjehome req.ssl_sni -m end openshift.letitbleed.org
+
+
+
+frontend ft_vip_http
+  bind :80
+frontend ft_vip_https
+  bind :443
+frontend ft_ssl_vip_api
+  bind :8443
+frontend ft_ssl_vip_api_k8s
+  bind :6443
+

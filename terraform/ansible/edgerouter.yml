@@ -1,0 +1,4 @@
+---
+- hosts: all
+  roles:
+  - role: edgerouter_static_hosts

@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  tasks:
+  - name: dbg
+    debug:
+      var: testvar

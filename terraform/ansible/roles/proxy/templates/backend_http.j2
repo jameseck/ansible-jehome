@@ -1,0 +1,8 @@
+{% for k,v in (hosts_map | from_json).items() %}
+{% if v.ansible_playbook == 'kubeadm.yml' %}
+backend bk_http_{{ k | replace('.', '') }}
+  mode http
+  server {{ k }} {{ v.ip }}:80 check port 80
+{% endif %}
+
+{% endfor %}

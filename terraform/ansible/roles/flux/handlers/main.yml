@@ -1,0 +1,3 @@
+---
+- name: helm_repo_update
+  command: helm repo update

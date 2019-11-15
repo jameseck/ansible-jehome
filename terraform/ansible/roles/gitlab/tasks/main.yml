@@ -1,0 +1,69 @@
+---
+- name: Create Gitlab namespace
+  k8s:
+    name: gitlab
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Create gitlab certificate
+  k8s:
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1alpha2
+      kind: Certificate
+      metadata:
+        name: "gitlab-{{ cluster_domain | replace('.', '-') }}"
+        namespace: gitlab
+      spec:
+        commonName: "gitlab.{{ cluster_domain }}"
+        secretName: "gitlab-{{ cluster_dashes }}"
+        issuerRef:
+          kind: ClusterIssuer
+          name: "{{ root_ca_clusterissuer_name }}"
+        dnsNames:
+        - "gitlab.{{ cluster_domain }}"
+        - "minio.{{ cluster_domain }}"
+        - "registry.{{ cluster_domain }}"
+    wait: true
+    wait_condition:
+      reason: Ready
+      type: Ready
+      status: "True"
+    wait_timeout: 30
+
+- name: Check Helm Gitlab repo
+  shell: helm repo list | grep gitlab | awk '{print $1" "$2}'
+  changed_when: False
+  register: helm_repo_list
+
+- name: Add Helm Gitlab repo
+  command: helm repo add gitlab https://charts.gitlab.io
+  when: '"gitlab https://charts.gitlab.io" not in helm_repo_list.stdout_lines'
+  notify: helm_repo_update
+
+- meta: flush_handlers
+
+- name: Check Helm releases
+  command: helm list -q
+  changed_when: False
+  register: helm_list_results
+
+- name: Install Gitlab via Helm
+  shell: >
+    helm upgrade -i gitlab \
+      --set global.hosts.domain={{ cluster_domain }} \
+      --set global.edition=ce \
+      --set certmanager.install=false \
+      --set global.ingress.configureCertmanager=false \
+      --set nginx-ingress.enabled=false \
+      --set global.ingress.class=nginx \
+      --set gitlab-runner.install=false \
+      --set gitlab.unicorn.ingress.tls.secretName=gitlab-{{ cluster_dashes }} \
+      --set registry.ingress.tls.secretName=gitlab-{{ cluster_dashes }} \
+      --set minio.ingress.tls.secretName=gitlab-{{ cluster_dashes }} \
+      --namespace gitlab \
+      --timeout 1800 \
+      --wait \
+      gitlab/gitlab
+  when: "'gitlab' not in helm_list_results.stdout_lines"

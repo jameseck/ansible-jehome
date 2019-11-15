@@ -1,0 +1,23 @@
+frontend ft_ssl_vip_api
+  bind :8443
+  mode tcp
+  log global
+  option tcplog
+  log-format "vip_api: %[capture.req.hdr(0)] %ci:%cp [%t] %ft %b/%s %Tw/%Tc/%Tt %B %ts %ac/%fc/%bc/%sc/%rc %sq/%bq"
+  tcp-request inspect-delay 5s
+  tcp-request content capture req.ssl_sni len 30
+  tcp-request content accept if { req_ssl_hello_type 1 }
+
+{% for k,v in (hosts_map | from_json).items() %}
+{% if v.ansible_playbook == 'kubeadm.yml' %}
+  acl {{ k | replace('.', '') }} req.ssl_sni -m end api.{{ v.ansible_extra_vars.cluster_domain }}
+{% endif %}
+{% endfor %}
+
+{% for k,v in (hosts_map | from_json).items() %}
+{% if v.ansible_playbook == 'kubeadm.yml' %}
+  use_backend bk_api_{{ k | replace('.', '') }} if {{ k | replace('.', '') }}
+{% endif %}
+{% endfor %}
+
+  default_backend not_found_tcp

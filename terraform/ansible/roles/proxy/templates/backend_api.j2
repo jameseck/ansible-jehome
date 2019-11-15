@@ -1,0 +1,8 @@
+{% for k,v in (hosts_map | from_json).items() %}
+{% if v.ansible_playbook == 'kubeadm.yml' %}
+backend bk_api_{{ k | replace('.', '') }}
+  mode tcp
+  server {{ k }} {{ v.ip }}:6443 check port 6443
+{% endif %}
+
+{% endfor %}

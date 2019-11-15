@@ -1,0 +1,24 @@
+frontend ft_vip_http
+  bind :80
+  mode http
+  log global
+  option httplog
+  capture request header Host len 60
+  log-format "vip %[capture.req.hdr(0)] %ci:%cp\ [%tr]\ %ft\ %b/%s\ %TR/%Tw/%Tc/%Tr/%Ta\ %ST\ %B\ %CC\ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %hr\ %hs\ %{+Q}r"
+  tcp-request inspect-delay 5s
+
+  # AUTOGENERATE
+{% for k,v in (hosts_map | from_json).items() %}
+{% if v.ansible_playbook == 'kubeadm.yml' %}
+  acl {{ k | replace('.', '') }} hdr(host) -m end -i .{{ v.ansible_extra_vars.cluster_domain }}
+{% endif %}
+{% endfor %}
+
+  # AUTOGENERATE
+{% for k,v in (hosts_map | from_json).items() %}
+{% if v.ansible_playbook == 'kubeadm.yml' %}
+  use_backend bk_http_{{ k | replace('.', '') }} if {{ k | replace('.', '') }}
+{% endif %}
+{% endfor %}
+
+  default_backend not_found_http

@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+  - name: do nothing
+    debug:
+      msg: "Doing nothing"

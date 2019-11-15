@@ -1,0 +1,21 @@
+---
+- name: debug token
+  debug:
+    var: token
+- name: debug certkey
+  debug:
+    var: cert_key
+
+- name: debug certhash
+  debug:
+    var: cert_hash
+
+- name: Join control-plane node to cluster
+  shell: >
+    kubeadm join "{{ master_api }}" \
+      --token "{{ token }}" \
+      --discovery-token-ca-cert-hash "{{ cert_hash }}" \
+      --control-plane \
+      --certificate-key "{{ cert_key }}"
+  args:
+    creates: /etc/kubernetes/kubelet.conf
