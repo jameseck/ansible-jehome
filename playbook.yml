@@ -1,13 +1,24 @@
 ---
 # Master playbook
+
+# Add auto-generated MAC addresses to kvm_hosts_map
+#- hosts: localhost
+#  tasks:
+#  - name: Generate MAC addresses for kvm hosts
+#    set_fact:
+#      kvm_hosts_dict_inc_macs: "{{ kvm_hosts_dict | generate_macs }}"
+
 - hosts: edgerouter
+  gather_facts: no
   vars:
     ansible_connection: network_cli
     ansible_network_os: edgeos
   roles:
   - role: edgerouter_static_hosts
     vars:
-      hosts_map: "{{ static_hosts_map | combine(kvm_hosts_map) }}"
+#      static_hosts: "{{ static_hosts_dict | combine(kvm_hosts_dict | generate_macs) }}"
+      static_hosts: "{{ static_hosts_dict }}"
+      networks: "{{ edgerouter_networks }}"
 
 - hosts: localhost
   tasks:
@@ -15,7 +26,7 @@
     add_host:
       name: "{{ item.key }}"
       groups: kvm
-    with_dict: "{{ kvm_hosts_map }}"
+    with_dict: "{{ kvm_hosts_dict }}"
 
 - hosts: kvm
   tasks:

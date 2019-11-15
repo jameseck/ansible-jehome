@@ -1,0 +1,4 @@
+---
+required_vars:
+  - static_hosts
+  - networks

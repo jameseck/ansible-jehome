@@ -1,31 +1,67 @@
 ---
+# We need to pass in some variables:
+# hosts - a dict for the static hosts
+# example_hosts:
+#   WIRED:
+#     bob.je.home:
+#       ip: <ip>
+#       mac: <mac>
+#       pool: default # for the disk images
+#       size: 8589924592 # disk size in bytes
+#       memory: 2048 # memory in MB
+#       cpu: 2 # num of cpus
+
+# networks - this is a dict describing the edgerouter networks and corresponding subnets
+# example_networks:
+#   WIRED:
+#     subnet: 192.168.0.0/24
+
 - name: debug
   debug:
-    msg: "hosts_map is: {{ hosts_map | type_debug }}"
+    msg: "static_hosts is: {{ static_hosts | type_debug }}"
 
-- name: set hosts_map to dict if string
-  set_fact:
-    hosts_dict: "{{ hosts_map | from_json }}"
-  when: hosts_map | type_debug == 'str'
+# Don't think we need this
+#- name: set hosts_map to dict if string
+#  set_fact:
+#    hosts_dict: "{{ static_hosts | from_json }}"
+#  when: static_hosts | type_debug == 'str'
+#
+#- name: set hosts_map to dict
+#  set_fact:
+#    hosts_dict: "{{ hosts_map }}"
 
-- name: set hosts_map to dict
-  set_fact:
-    hosts_dict: "{{ hosts_map }}"
+# WORKED WITH FLAT DICT (IE, NO NETWORKS LEVEL)
+#- name: Check variables
+#  assert:
+#    that:
+#      - item.key is defined
+#      - item.value.ip | ipaddr
+#      - item.value.mac is regex("^([a-fA-F0-9]{2}[:|\-]?){6}$")
+#      - item.value.network_name is defined
+#      - item.value.subnet | ipsubnet
+#  with_dict: "{{ static_hosts }}"
 
-- name: Check variables
-  assert:
-    that:
-      - item.key is defined
-      - item.value.ip | ipaddr
-      - item.value.mac is regex("^([a-fA-F0-9]{2}[:|\-]?){6}$")
-      - item.value.network_name is defined
-      - item.value.subnet | ipsubnet
-  with_dict: "{{ hosts_map }}"
+#- name: Check variables
+#  assert:
+#    that:
+#      - item.value.fqdn is defined
+#      - item.value.ip | ipaddr
+#      - item.value.mac is regex("^([a-fA-F0-9]{2}[:|\-]?){6}$")
+#      - item.value.network_name is defined
+#      - item.value.subnet | ipsubnet
+#  debug:
+#    msg: "{{ item }}"
+#  loop: "{{ static_hosts | dict2items }}"
+#  with_subelements:
+#  - "{{ static_hosts }}"
+#  - "{{ edgerouter_networks.keys() }}"
+
+# TODO: we need to add some sort of validation
 
 - name: debugtemplate
   debug:
     msg: "{{ lookup('template', './mappings.j2') }}"
 
-- name: Set the static host and dhcp mapping
-  edgeos_config:
-    lines: "{{ lookup('template', './mappings.j2') }}"
+#- name: Set the static host and dhcp mapping
+#  edgeos_config:
+#    lines: "{{ lookup('template', './mappings.j2') }}"
