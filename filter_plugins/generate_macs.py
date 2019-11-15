@@ -47,7 +47,6 @@ class FilterModule(object):
 
     def generate_macs(self, hosts_dict):
       new_hosts_dict = deepcopy(hosts_dict)
-      for netw, val in new_hosts_dict.items():
-        for h, v in val.items():
-          new_hosts_dict[netw][h]['mac'] = random_mac('52:54:00', seed=h)
+      for h, v in new_hosts_dict.items():
+        new_hosts_dict[h]['mac'] = random_mac('52:54:00', seed=h)
       return new_hosts_dict

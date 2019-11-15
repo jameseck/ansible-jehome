@@ -31,15 +31,15 @@
 #    hosts_dict: "{{ hosts_map }}"
 
 # WORKED WITH FLAT DICT (IE, NO NETWORKS LEVEL)
-#- name: Check variables
-#  assert:
-#    that:
-#      - item.key is defined
-#      - item.value.ip | ipaddr
-#      - item.value.mac is regex("^([a-fA-F0-9]{2}[:|\-]?){6}$")
-#      - item.value.network_name is defined
+- name: Check variables
+  assert:
+    that:
+      - item.key is defined
+      - item.value.ip | ipaddr
+      - item.value.mac is regex("^([a-fA-F0-9]{2}[:|\-]?){6}$")
+      - item.value.network_name is defined
 #      - item.value.subnet | ipsubnet
-#  with_dict: "{{ static_hosts }}"
+  with_dict: "{{ static_hosts }}"
 
 #- name: Check variables
 #  assert:
