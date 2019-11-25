@@ -13,11 +13,17 @@ frontend ft_ssl_vip_api
   acl {{ k | replace('.', '') }} req.ssl_sni -m end api.{{ v.ansible_extra_vars.cluster_domain }}
 {% endif %}
 {% endfor %}
+{% for k,v in haproxy_ends.items() %}
+  acl {{ k | replace('.', '') }} req.ssl_sni -m end api.{{ v.cluster_domain | default(k) }}
+{% endfor %}
 
 {% for k,v in (hosts_map | from_json).items() %}
 {% if v.ansible_playbook == 'kubeadm.yml' %}
   use_backend bk_api_{{ k | replace('.', '') }} if {{ k | replace('.', '') }}
 {% endif %}
+{% endfor %}
+{% for k,v in haproxy_ends.items() %}
+  use_backend bk_api_{{ k | replace('.', '') }} if {{ k | replace('.', '') }}
 {% endfor %}
 
   default_backend not_found_tcp

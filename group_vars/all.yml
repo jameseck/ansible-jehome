@@ -118,10 +118,6 @@ static_hosts_dict:
     network_name: WIRED
   tplinksw.je.home:
     ip: 192.168.0.249
-    mac: f0:9f:c2:61:85:84
-    network_name: WIRED
-  tpswitch.je.home:
-    ip: 192.168.0.249
     mac: e8:de:27:41:af:bf
     network_name: WIRED
   unifiap.je.home:
@@ -188,3 +184,23 @@ kvm_hosts_dict:
     ansible_playbook: noop.yml
     ansible_extra_vars:
       cluster_domain: k8scluster.je.home
+
+# This is for k8s clusters that are not properly managed by ansible+terraform yet (like pi4 and openshift?)
+haproxy_ends:
+  pi4.je.home:
+    ips:
+    - 192.168.0.14
+  openshift.je.home:
+    cluster_domain: apps.letitbleed.org
+    api_port: 8443
+    ips:
+    - 192.168.0.5
+  os.je.home:
+    cluster_domain: osapps.letitbleed.org
+    api_port: 8443
+    ips:
+    - 192.168.0.7
+  k8s.je.home:
+    cluster_domain: k8s.letitbleed.org
+    ips:
+    - 192.168.0.6

@@ -19,7 +19,7 @@ resource "libvirt_cloudinit_disk" "cloudinitdisk" {
   name = "cloudinit_${each.key}.iso"
   pool = each.value["pool"]
 
-  user_data      = <<EOF
+  user_data = <<EOF
 #cloud-config
 fqdn: ${each.key}
 disable_root: 0
@@ -56,6 +56,7 @@ growpart:
   mode: auto
   devices: ['/']
 EOF
+
   network_config = <<EOF
 version: 1
 config:

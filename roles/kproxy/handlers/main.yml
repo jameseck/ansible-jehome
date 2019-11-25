@@ -4,7 +4,8 @@
     name: rh-haproxy18-haproxy
     state: reloaded
 
-- name: restart_rsyslog
-  service:
-    name: rsyslog
-    state: restarted
+# NOTE: we don't need this if we specify /dev/log in haproxy conf
+#- name: restart_rsyslog
+#  service:
+#    name: rsyslog
+#    state: restarted

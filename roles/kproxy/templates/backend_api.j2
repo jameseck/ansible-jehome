@@ -2,7 +2,14 @@
 {% if v.ansible_playbook == 'kubeadm.yml' %}
 backend bk_api_{{ k | replace('.', '') }}
   mode tcp
-  server {{ k }} {{ v.ip }}:6443 check port 6443
+  server {{ k }} {{ v.ip }}:{{ v.api_port | default("6443") }} check port {{ v.api_port | default("6443") }}
 {% endif %}
+{% endfor %}
 
+{% for k,v in haproxy_ends.items() %}
+backend bk_api_{{ k | replace('.', '') }}
+  mode tcp
+{% for ip in v.ips %}
+  server {{ k }} {{ ip }}:{{ v.api_port | default("6443") }} check port {{ v.api_port | default("6443") }}
+{% endfor %}
 {% endfor %}

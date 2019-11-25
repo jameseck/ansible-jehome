@@ -5,4 +5,4 @@ listen stats
   stats hide-version
   stats realm Haproxy\ Statistics
   stats uri /haproxy_stats
-  stats auth admin:password
+  stats auth {{ haproxy_stats_user }}:{{ haproxy_stats_password }}

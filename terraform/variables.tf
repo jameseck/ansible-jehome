@@ -3,10 +3,10 @@ variable "libvirt_host" {
   type        = string
 }
 
-variable "static_hosts_map" {
-  description = "A map of all hosts - applied to edgerouter for dhcp/dns"
-  type        = map
-}
+#variable "static_hosts_map" {
+#  description = "A map of all hosts - applied to edgerouter for dhcp/dns"
+#  type        = map
+#}
 
 variable "kvm_hosts_map" {
   description = "A map of KVM domains"
@@ -14,16 +14,22 @@ variable "kvm_hosts_map" {
   default     = {}
 }
 
-variable "edgerouter_ip" {
-  description = "The ip or hostname for the Edgerouter"
-  type        = string
+variable "k8s_clusters" {
+  description = "A map of k8s clusters"
+  type        = any
+  default     = {}
 }
 
-variable "edgerouter_user" {
-  description = "The username to SSH to the Edgerouter"
-  type        = string
-  default     = "ubnt"
-}
+#variable "edgerouter_ip" {
+#  description = "The ip or hostname for the Edgerouter"
+#  type        = string
+#}
+
+#variable "edgerouter_user" {
+#  description = "The username to SSH to the Edgerouter"
+#  type        = string
+#  default     = "ubnt"
+#}
 
 variable "ssh_key" {
   type = string
