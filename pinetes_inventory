@@ -1,0 +1,9 @@
+[k8s]
+pinetes1.je.home ansible_user=ubuntu
+pinetes2.je.home ansible_user=ubuntu
+pinetes3.je.home ansible_user=ubuntu
+
+[k8s:vars]
+ansible_become=yes
+base_cluster_domain=pinetes.je.home
+k8s_api_vip=192.168.0.50

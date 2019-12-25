@@ -1,0 +1,50 @@
+---
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400 #One day
+
+- name: Ensure dependencies are installed.
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+    state: present
+
+- name: Add Kubernetes apt key.
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  register: add_repository_key
+  ignore_errors: "{{ kubernetes_apt_ignore_key_error }}"
+
+- name: Add Kubernetes repository.
+  apt_repository:
+    repo: "{{ kubernetes_apt_repository }}"
+    state: present
+    update_cache: true
+
+- name: Add Kubernetes apt preferences file to pin a version.
+  template:
+    src: apt-preferences-kubernetes.j2
+    dest: /etc/apt/preferences.d/kubernetes
+
+- name: gather service facts
+  service_facts:
+
+- name: disable dphys-swapfile service if present
+  service:
+    name: dphys-swapfile
+    state: stopped
+    enabled: no
+  when: "'dphys-swapfile' in services"
+
+- name: update-alternatives for iptables
+  shell: "{{ item }}"
+  with_items:
+  - "update-alternatives --set iptables /usr/sbin/iptables-legacy"
+  - "update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy"
+  - "update-alternatives --set ebtables /usr/sbin/ebtables-legacy"
+  - "update-alternatives --set arptables /usr/sbin/arptables-legacy"

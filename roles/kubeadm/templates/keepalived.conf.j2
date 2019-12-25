@@ -1,0 +1,40 @@
+global_defs {
+  router_id LVS_k8s
+  enable_script_security
+}
+
+vrrp_script check_k8s_api {
+    script "/usr/bin/curl --silent --tlsv1.2 --cert /etc/kubernetes/pki/apiserver-kubelet-client.crt --key /etc/kubernetes/pki/apiserver-kubelet-client.key --cacert /etc/kubernetes/pki/ca.crt https://{{ ansible_default_ipv4.address }}:{{ k8s_api_port }}/healthz"
+    user root
+    interval 3
+    timeout 9
+    fall 2
+    rise 2
+}
+
+vrrp_instance k8s-vip {
+    state BACKUP
+    priority 101
+    interface eth0
+    virtual_router_id 47
+    advert_int 1
+    mcast_src_ip {{ ansible_default_ipv4.address }}
+    nopreempt
+
+#    unicast_src_ip {{ ansible_default_ipv4.address }}
+    unicast_peer {
+{% for host in groups['k8s'] %}
+{% if inventory_hostname != host %}
+        {{ hostvars[host].ansible_default_ipv4.address }}
+{% endif %}
+{% endfor %}
+    }
+
+    virtual_ipaddress {
+        {{ keepalived_vip }}/24
+    }
+
+    track_script {
+        check_k8s_api
+    }
+}

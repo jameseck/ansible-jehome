@@ -1,7 +1,19 @@
 ---
+- name: include arch vars
+  include_vars: amd64.yml
+  when: ansible_architecture == 'x86_64'
+
+- name: include arch vars
+  include_vars: arm.yml
+  when: ansible_architecture == 'armv7l'
+
+- name: include arch vars
+  include_vars: arm64.yml
+  when: ansible_architecture == 'aarch64'
+
 - name: Install Helm
   unarchive:
-    src: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_version }}-linux-amd64.tar.gz"
+    src: "https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_version }}-linux-{{ helm_arch }}.tar.gz"
     dest: /usr/local/bin
     extra_opts:
     - --strip=1
@@ -54,5 +66,5 @@
   register: helm_list
 
 - name: Helm init
-  command: helm init --upgrade --service-account tiller --history-max 10 --wait
+  command: helm init --upgrade --tiller-image {{ tiller_image }} --service-account tiller --history-max 10 --wait
   when: helm_list.rc != 0

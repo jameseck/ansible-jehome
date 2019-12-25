@@ -1,0 +1,27 @@
+---
+- name: allow binding non-local IP
+  sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    value: "1"
+    sysctl_file: /etc/sysctl.d/nonlocalbind.conf
+    reload: true
+    state: present
+
+- name: keepalived install
+  package:
+    name: keepalived
+    state: present
+
+- name: keepalived config
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+  notify: restart keepalived
+
+- meta: flush_handlers
+
+- name: keepalived service
+  service:
+    name: keepalived
+    state: started
+    enabled: yes

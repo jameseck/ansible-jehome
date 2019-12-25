@@ -1,0 +1,5 @@
+- hosts: "{{ hostlist }}"
+  tasks:
+  - name: kubeadm.yml test
+    debug:
+      msg: "Doing something for kubeadm.yml playbook"

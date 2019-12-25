@@ -1,0 +1,11 @@
+---
+- hosts: k8s[0]
+  roles:
+#  - localstorage
+  - helm
+  - flux
+#  - nginx_ingress
+#  - cert_manager
+#  - root_ca
+#  - gitlab
+#  - gitlab_runner

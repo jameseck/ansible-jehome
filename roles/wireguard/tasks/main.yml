@@ -1,0 +1,40 @@
+---
+- name: Check if wireguard repo is already configured
+  stat:
+    path: "{{ wireguard_repofile_path }}"
+  register: wireguard_repofile_result
+
+- name: Install wireguard repo
+  get_url:
+    url: "{{ wireguard_repo_url }}"
+    dest: "{{ wireguard_repofile_path }}"
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 10
+  when: not wireguard_repofile_result.stat.exists
+
+- name: Import wireguard GPG key
+  rpm_key:
+    key: "{{ wireguard_repo_gpg_key_url }}"
+    state: present
+  when: not wireguard_repofile_result.stat.exists
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: install wireguard-dkms and wireguard-tools
+  yum:
+    name:
+      - wireguard-dkms
+      - wireguard-tools
+    state: installed
+  register: wireguard_install
+
+#- name: list installed kernels
+#  shell: "rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}\n'"
+#  changed_when: False
+#  register: kernels
+#
+#- name: rebuild wireguard dkms module for all installed kernels
+#  shell: "dkms install -m wireguard -v {{ item }}"
+#  with_items: "{{ kernels.stdout_lines }}"
+#  when: wireguard_install.changed

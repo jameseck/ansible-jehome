@@ -1,14 +1,17 @@
 ---
-k8s_package_version: 1.15.4
-k8s_cluster_version: stable-1.15
-helm_version: v2.14.3
-flux_version: 1.15.0
+#k8s_package_version: 1.16.4
+#k8s_cluster_version: stable-1.16
+#k8s_api_vip: ""
+helm_version: v2.16.1
+flux_version: 1.17.0
 pod_network_cidr: 10.244.0.0/16
 flux_git_poll_interval: 5m
 flux_git_user: jameseck
 flux_git_email: jameseck@users.noreply.github.com
 flux_git_url: git@github.com:jameseck/flux-get-started
 flux_git_branch: master
+
+k8s_api_port: 6443
 
 base_cluster_domain: "{{ ansible_fqdn }}"
 api_cluster_domain: "{{ base_cluster_domain }}"
@@ -20,3 +23,22 @@ bootstrap: false
 root_ca_issuer_name: selfsigning-issuer-for-root-ca
 root_ca_certificate_name: "{{ cluster_dashes }}-root-ca"
 root_ca_clusterissuer_name: "{{ cluster_dashes }}-ca-issuer"
+
+kubernetes_version: '1.16'
+kubernetes_version_rhel_package: '1.16.4'
+
+kubernetes_allow_pods_on_master: true
+kubernetes_yum_arch: x86_64
+kubernetes_apt_release_channel: main
+kubernetes_apt_repository: "deb http://apt.kubernetes.io/ kubernetes-xenial {{ kubernetes_apt_release_channel }}"
+kubernetes_apt_ignore_key_error: false
+kubernetes_version_kubeadm: 'stable-{{ kubernetes_version }}'
+kubernetes_packages:
+  - name: kubelet
+    state: present
+  - name: kubectl
+    state: present
+  - name: kubeadm
+    state: present
+  - name: kubernetes-cni
+    state: present

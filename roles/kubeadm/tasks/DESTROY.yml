@@ -1,0 +1,11 @@
+---
+- name: kubeadm reset
+  shell: kubeadm reset -f
+
+- name: iptables reset
+  shell: "{{ item }}"
+  with_items:
+  - iptables -F
+  - iptables -X
+  - iptables -t nat -F
+  - iptables -t nat -X

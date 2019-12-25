@@ -1,0 +1,4 @@
+---
+flux_arch: arm64
+flux_image_repository: zlangbert/flux
+flux_image_tag: ae83bd8d-multiarch

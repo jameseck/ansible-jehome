@@ -1,0 +1,4 @@
+- hosts: k8s
+  tasks:
+  - name: kubeadm reset
+    include_tasks: roles/kubeadm/tasks/DESTROY.yml

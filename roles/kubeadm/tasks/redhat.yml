@@ -1,0 +1,25 @@
+---
+- name: remove firewalld
+  yum:
+    name: firewalld
+    state: absent
+- name: yum upgrade all
+  yum:
+    name: "*"
+    state: latest
+
+- name: Disable SeLinux
+  selinux:
+    state: permissive
+    policy: targeted
+
+- name: k8s yum repo
+  yum_repository:
+    name: kubernetes
+    description: kubernetes
+    state: present
+    enabled: no
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: yes
+    repo_gpgcheck: yes

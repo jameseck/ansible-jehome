@@ -1,0 +1,5 @@
+- hosts: kproxy.je.home
+  roles:
+  - role: kproxy
+    vars:
+      hosts_map: "{{ kvm_hosts_dict | generate_macs | to_json }}"
