@@ -117,3 +117,6 @@
 - name: join nodes
   include_tasks: join.yml
   when: not bootstrap
+
+- name: include untaint.yml
+  include_tasks: untaint.yml

@@ -1,3 +1,5 @@
 .terraform
 *.tfstate*
 __pycache__
+roles/flux/files/flux_ssh_key
+roles/flux/files/flux_ssh_key.pub

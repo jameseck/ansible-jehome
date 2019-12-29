@@ -1,0 +1,22 @@
+---
+#  shell: "kubectl get nodes -o json | jq '.items[] | select(.spec.taints != null) .spec.taints'"
+- name: Get master taint status
+  run_once: true
+  shell: >
+    {% raw %}
+    kubectl get nodes -o go-template='{{ range $item := .items }}{{ with $nodename := $item.metadata.name }}{{ range $taint := $item.spec.taints }}{{ if and (eq $taint.key "node-role.kubernetes.io/master") (eq $taint.effect "NoSchedule") }}{{ printf "%s\n" $nodename }}{{ end }}{{ end }}{{ end }}{{ end }}'
+    {% endraw %}
+  changed_when: False
+  register: master_taints
+
+- name: untaint master k8s nodes
+  run_once: true
+  command: "kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-"
+  failed_when: False
+  when: ansible_fqdn in master_taints.stdout_lines
+
+- name: untaint master k8s nodes
+  run_once: true
+  command: "kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master:NoSchedule-"
+  failed_when: False
+  when: ansible_fqdn in master_taints.stdout_lines

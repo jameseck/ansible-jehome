@@ -1,7 +1,11 @@
 ---
 #- hosts: k8s[0]
 - hosts: k8s
+  any_errors_fatal: True
   pre_tasks:
+  - name: set hostname
+    hostname:
+      name: "{{ inventory_hostname }}"
   - name: set cluster_domain fact
     set_fact:
       cluster_domain: "{{ cluster_domain | (ansible_extra_vars | from_json).cluster_domain | default(ansible_fqdn) }}"
@@ -11,7 +15,7 @@
     when: ansible_os_family == 'RedHat'
   - role: kubeadm
     cluster_domain: "{{ cluster_domain }}"
-    keepalived_vip: "{{ k8s_api_vip }}"
+#    keepalived_vip: "{{ k8s_api_vip }}"
     bootstrap: "{{ true if ansible_fqdn == groups['k8s'][0] else false }}"
 #  - localstorage
 #  - helm

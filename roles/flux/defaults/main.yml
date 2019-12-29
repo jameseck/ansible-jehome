@@ -1,7 +1,8 @@
 ---
 flux_version: 1.17.0
-flux_git_poll_interval: 5m
+flux_git_poll_interval: 2m
 flux_git_user: jameseck
 flux_git_email: jameseck@users.noreply.github.com
-flux_git_url: git@github.com:jameseck/flux-get-started
-flux_git_branch: master
+flux_git_url: git@github.com:jameseck/ansible-jehome
+flux_git_path: flux/pinetes
+flux_git_branch: refactor

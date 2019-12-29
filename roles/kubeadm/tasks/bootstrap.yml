@@ -10,11 +10,12 @@
     kubeadm init \
       --pod-network-cidr="{{ pod_network_cidr }}" \
       --kubernetes-version="stable-{{ kubernetes_version }}" \
-      --apiserver-cert-extra-sans="{{ api_cluster_domain }},{{ ansible_default_ipv4.address }},{{ keepalived_vip }}" \
+      --apiserver-cert-extra-sans="{{ api_cluster_domain }},{{ ansible_default_ipv4.address }},{{ keepalived_vip | default(ansible_default_ipv4.address) }}" \
       --control-plane-endpoint="{{ api_cluster_domain }}:{{ k8s_api_port }}" \
-      --apiserver-advertise-address="{{ keepalived_vip | default(ansible_default_ipv4.address) }}" \
+      --apiserver-advertise-address="{{ ansible_default_ipv4.address }}" \
       {{ kubernetes_kubeadm_init_extra_opts | default("") }}
   when: k8s_status.rc != 0
+#      --apiserver-advertise-address="{{ keepalived_vip | default(ansible_default_ipv4.address) }}" \
 
 - name: Create .kube directory
   file:
@@ -47,18 +48,8 @@
   changed_when: False
   run_once: True
 
-#  shell: "kubectl get nodes -o json | jq '.items[] | select(.spec.taints != null) .spec.taints'"
-- name: Get master taint status
-  shell: >
-    {% raw %}
-    kubectl get nodes -o go-template='{{ range $item := .items }}{{ with $nodename := $item.metadata.name }}{{ range $taint := $item.spec.taints }}{{ if and (eq $taint.key "node-role.kubernetes.io/master") (eq $taint.effect "NoSchedule") }}{{ printf "%s\n" $nodename }}{{ end }}{{ end }}{{ end }}{{ end }}'
-    {% endraw %}
-  changed_when: False
-  register: master_taints
-
-- name: untaint master k8s nodes
-  command: "kubectl taint nodes --all node-role.kubernetes.io/master-kubectl taint nodes --all node-role.kubernetes.io/master-"
-  when: ansible_fqdn in master_taints.stdout_lines
+- name: include untaint.yml
+  include_tasks: untaint.yml
 
 - name: Wait for all control-plane pods become created
   shell: "kubectl get pods --namespace=kube-system --selector tier=control-plane --output=jsonpath='{.items[*].metadata.name}'"

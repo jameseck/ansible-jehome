@@ -67,7 +67,7 @@
   changed_when: False
   register: helm_list_results
 
-- name: Install Flux via Helm
+- name: Install Flux via Helm (no check to see if it exists)
   shell: >
     helm upgrade -i flux \
       --set helmOperator.create=true \
@@ -75,15 +75,16 @@
       --set git.user={{ flux_git_user }} \
       --set git.email={{ flux_git_email }} \
       --set git.url={{ flux_git_url }} \
+      --set git.branch={{ flux_git_branch }} \
+      --set git.path={{ flux_git_path }} \
       --set git.secretName=flux-git-auth \
       --set git.pollInterval={{ flux_git_poll_interval }} \
-      --set git.branch={{ flux_git_branch }} \
       {% if flux_image_repository is defined %}--set image.repository={{ flux_image_repository }}{% endif %}
       {% if flux_image_tag is defined %}--set image.tag={{ flux_image_tag }}{% endif %}
       --namespace flux \
       --wait \
       fluxcd/flux
-  when: "'flux' not in helm_list_results.stdout_lines"
+#  when: "'flux' not in helm_list_results.stdout_lines"
 
 # consider adding export FLUX_FORWARD_NAMESPACE=flux to /root/.bashrc
 

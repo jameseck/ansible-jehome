@@ -1,6 +1,5 @@
 ---
 - name: Update and upgrade apt packages
-  become: true
   apt:
     upgrade: yes
     update_cache: yes
@@ -42,9 +41,19 @@
   when: "'dphys-swapfile' in services"
 
 - name: update-alternatives for iptables
-  shell: "{{ item }}"
-  with_items:
-  - "update-alternatives --set iptables /usr/sbin/iptables-legacy"
-  - "update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy"
-  - "update-alternatives --set ebtables /usr/sbin/ebtables-legacy"
-  - "update-alternatives --set arptables /usr/sbin/arptables-legacy"
+  alternatives:
+    name: iptables
+    path: /usr/sbin/iptables-legacy
+
+- name: update-alternatives for ip6tables
+  alternatives:
+    name: ip6tables
+    path: /usr/sbin/ip6tables-legacy
+
+#- name: update-alternatives for iptables
+#  shell: "{{ item }}"
+#  with_items:
+#  - "update-alternatives --set iptables /usr/sbin/iptables-legacy"
+#  - "update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy"
+#  - "update-alternatives --set ebtables /usr/sbin/ebtables-legacy"
+#  - "update-alternatives --set arptables /usr/sbin/arptables-legacy"

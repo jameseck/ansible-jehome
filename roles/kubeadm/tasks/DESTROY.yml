@@ -9,3 +9,7 @@
   - iptables -X
   - iptables -t nat -F
   - iptables -t nat -X
+
+- name: Reboot
+  reboot:
+    reboot_timeout: 600

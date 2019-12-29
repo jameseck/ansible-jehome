@@ -4,7 +4,7 @@ global_defs {
 }
 
 vrrp_script check_k8s_api {
-    script "/usr/bin/curl --silent --tlsv1.2 --cert /etc/kubernetes/pki/apiserver-kubelet-client.crt --key /etc/kubernetes/pki/apiserver-kubelet-client.key --cacert /etc/kubernetes/pki/ca.crt https://{{ ansible_default_ipv4.address }}:{{ k8s_api_port }}/healthz"
+    script "/usr/bin/curl --connect-timeout 2 --max-time 2 --silent --tlsv1.2 --cert /etc/kubernetes/pki/apiserver-kubelet-client.crt --key /etc/kubernetes/pki/apiserver-kubelet-client.key --cacert /etc/kubernetes/pki/ca.crt https://{{ ansible_default_ipv4.address }}:{{ k8s_api_port }}/healthz"
     user root
     interval 3
     timeout 9
