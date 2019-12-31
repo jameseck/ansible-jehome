@@ -10,4 +10,4 @@ spec:
     name: consul
     version: 3.9.4
   values:
-    storageClass: rook-ceph-block
+    StorageClass: rook-ceph-block
