@@ -7,7 +7,7 @@ spec:
   releaseName: consul
   chart:
     repository: https://kubernetes-charts.storage.googleapis.com/
-    name: stable/consul
+    name: consul
     version: 3.9.4
   values:
     storageClass: rook-ceph-block
