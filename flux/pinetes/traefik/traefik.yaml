@@ -1,0 +1,26 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  releaseName: traefik
+  chart:
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    name: traefik
+    version: 1.85.0
+  values:
+    nodeSelector:
+      node-role.kubernetes.io/master: ""
+    serviceType: NodePort
+    service:
+      nodePorts:
+        http: 30080
+        https: 30443
+    deployment:
+      hostPort:
+        httpEnabled: true
+        httpPort: 80
+        httpsEnabled: true
+        httpsPort: 443
