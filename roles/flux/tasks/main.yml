@@ -18,13 +18,15 @@
     mode: 0755
 
 - name: Check if Flux Helm CRD is installed
-  command: kubectl get crd helmreleases.flux.weave.works
+#  command: kubectl get crd helmreleases.flux.weave.works
+  command: kubectl get crd helmreleases.helm.fluxcd.io
   changed_when: False
   failed_when: False
   register: flux_helm_crd
 
 - name: Install Flux Helm CRD
-  command: kubectl apply -f https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml
+  #command: kubectl apply -f https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml
+  command: kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/flux-helm-release-crd.yaml
   when: flux_helm_crd.rc != 0
 
 - name: Create Flux namespace
@@ -87,7 +89,6 @@
 #  when: "'flux' not in helm_list_results.stdout_lines"
 
 # consider adding export FLUX_FORWARD_NAMESPACE=flux to /root/.bashrc
-
 # fluxctl list-workloads -a
 # fluxctl sync
 
@@ -106,3 +107,16 @@
     var: flux_sync
   when: flux_sync.rc != 0
 
+- name: Install Flux Helm Operator via Helm (no check to see if it exists)
+  shell: >
+    helm upgrade -i flux-helm-operator \
+      --set git.ssh.secretName=flux-git-auth \
+      {% if flux_helm_operator_image_repository is defined %}--set image.repository={{ flux_helm_operator_image_repository }}{% endif %}
+      {% if flux_helm_operator_image_tag is defined %}--set image.tag={{ flux_helm_operator_image_tag }}{% endif %}
+      --namespace flux \
+      --wait \
+      fluxcd/helm-operator
+
+- name: Wait for Flux Helm Operator rollout
+  command: kubectl -n flux rollout status deployment/flux-helm-operator
+  changed_when: False

@@ -2,3 +2,5 @@
 flux_arch: arm64
 flux_image_repository: zlangbert/flux
 flux_image_tag: ae83bd8d-multiarch
+flux_helm_operator_image_repository: zlangbert/flux-helm-operator
+flux_helm_operator_image_tag: e9a4e137-multiarch

@@ -36,4 +36,4 @@
       --control-plane
   args:
     creates: /etc/kubernetes/kubelet.conf
-  when: not bootstrap and k8s_control_plane
+  when: not bootstrap and k8s_control_plane is defined

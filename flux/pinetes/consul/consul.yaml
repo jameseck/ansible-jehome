@@ -1,0 +1,13 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: consul
+  namespace: consul
+spec:
+  releaseName: consul
+  chart:
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    name: stable/consul
+    version: 3.9.4
+  values:
+    storageClass: rook-ceph-block
