@@ -3,7 +3,7 @@ apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
   name: vault
-  namespace: vault
+  namespace: convlt
 spec:
   releaseName: vault
   chart:
@@ -16,8 +16,8 @@ spec:
       config:
         storage:
           consul:
-            address: consul.consul.svc.cluster.local:8500
+            address: consul.convlt.svc.cluster.local:8500
             path: vault
     consulAgent:
-      join: consul.consul.svc.cluster.local
-      gossipKeySecretName: consul/consul-gossip-key
+      join: consul.convlt.svc.cluster.local
+      gossipKeySecretName: consul-gossip-key

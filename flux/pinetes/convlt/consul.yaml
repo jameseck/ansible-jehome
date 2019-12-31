@@ -3,7 +3,7 @@ apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
   name: consul
-  namespace: consul
+  namespace: convlt
 spec:
   releaseName: consul
   chart:
