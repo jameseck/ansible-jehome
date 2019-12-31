@@ -1,0 +1,31 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: nginx-ingress
+  namespace: nginx-ingress
+spec:
+  releaseName: nginx-ingress
+  chart:
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    name: nginx-ingress
+    version: 1.27.0
+  values:
+    controller:
+#      nodeSelector: node-role.kubernetes.io/master=""
+      hostNetwork: true
+      kind: DaemonSet
+      daemonset:
+        useHostPort: true
+        hostPorts:
+          http: 80
+          https: 443
+      service:
+        type: NodePort
+        nodePorts:
+          http: 30080
+          https: 30081
+#          tcp:
+#            2222: 30222
+#      tcp:
+#          2222: gitlab/gitlab-gitlab-shell:22
