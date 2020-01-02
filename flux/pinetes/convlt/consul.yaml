@@ -12,3 +12,5 @@ spec:
     version: 3.9.4
   values:
     StorageClass: rook-ceph-block
+    client:
+      exposeGossipPorts: true
