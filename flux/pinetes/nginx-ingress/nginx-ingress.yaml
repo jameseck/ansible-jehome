@@ -26,8 +26,8 @@ spec:
         nodePorts:
           http: 30080
           https: 30443
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
+#      nodeSelector:
+#        node-role.kubernetes.io/master: ""
     defaultBackend:
       image:
         repository: k8s.gcr.io/defaultbackend-arm64
