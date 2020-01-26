@@ -22,7 +22,7 @@ spec:
     count: 3
     allowMultiplePerNode: true
   dashboard:
-    enabled: true
+    enabled: false
     ssl: true
   monitoring:
     enabled: false  # requires Prometheus to be pre-installed
