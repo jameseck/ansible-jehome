@@ -1,0 +1,31 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: unifi
+  namespace: unifi
+spec:
+  releaseName: unifi
+  chart:
+    git: git@github.com:jameseck/ansible-jehome
+    ref: refactor
+    path: flux/charts/unifi
+  values:
+    image:
+      repository: ryansch/unifi-rpi
+      tag: 5.12.46
+    guiService:
+      type: NodePort
+#    ingress:
+#      annotations:
+#        nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+#      enabled: true
+#      hosts:
+#      - unifi.pinetes.je.home
+#      tls:
+#       - hosts:
+#         - unifi.pinetes.je.home
+#         secretName: unifi-pinetes-je-home
+    persistence:
+      enabled: true
+      storageClass: rook-ceph-block
